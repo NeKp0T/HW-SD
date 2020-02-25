@@ -24,6 +24,7 @@ public class ParserBuilder {
         commands.put("cat", () -> new Cat(informant));
         commands.put("pwd", Pwd::new);
         commands.put("wc", () -> new Wc(informant));
+        commands.put("ls", () -> new Ls());
         var context = new SimpleContext(commands, (name) -> new External(name, informant));
 
         var rules = new ArrayList<Rule>();
