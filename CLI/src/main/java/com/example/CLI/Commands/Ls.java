@@ -38,6 +38,7 @@ public class Ls implements Command {
 
         if (lsArguments.size() > 1) {
             errors.add("ls accepts one argument max");
+            return lsResult;
         }
 
         doLs(lsArguments.get(0), lsResult);
@@ -49,11 +50,11 @@ public class Ls implements Command {
         this.args = args;
     }
 
-    private void doLs(String dirPathString, Result result) {
-        var dir = new File(dirPathString);
-        var dirPath = dir.toPath();
+    private void doLs(String lsString, Result result) {
+        Path dirPath = Path.of(System.getProperty("user.dir")).resolve(lsString);
+        File dir = dirPath.toFile();
         if (!dir.exists()) {
-            result.addError("ls: Directory does not exist");
+            result.addError("ls: file " + dirPath + " does not exist");
             return;
         }
         if (!dir.isDirectory()) {
@@ -63,9 +64,16 @@ public class Ls implements Command {
 
         try {
             Stream<Path> contents = Files.list(dirPath);
-            result.addOutputLine(contents.map(Path::getFileName).map(Path::toString).collect(Collectors.joining(" ")));
+            result.addOutputLine(contents.map(this::pathToString).collect(Collectors.joining(" ")));
         } catch (IOException e) {
             result.addError("ls: can't read contents of " + dirPath);
         }
+    }
+
+    private String pathToString(Path path) {
+        if (path.toFile().isDirectory()) {
+            return path.getFileName().toString() + File.separator;
+        }
+        return path.getFileName().toString();
     }
 }
