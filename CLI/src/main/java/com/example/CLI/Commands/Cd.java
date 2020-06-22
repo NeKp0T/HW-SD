@@ -37,7 +37,7 @@ public class Cd implements Command {
         }
 
         if (cdArguments.size() > 1) {
-            cdResult.addError("ls accepts one argument max");
+            cdResult.addError("cd accepts one argument max");
             return cdResult;
         }
 
