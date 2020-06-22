@@ -4,6 +4,8 @@ import com.example.CLI.Commands.Result;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -32,7 +34,7 @@ public class SimpleInformant implements Informant {
         if (dataSource.containsKey(name)) {
             dataSource.put(name, data);
         } else {
-            try (var writer = new FileOutputStream(new File(name))) {
+            try (var writer = new FileOutputStream(resolveName(name))) {
                 writer.write(data);
             }
         }
@@ -45,9 +47,18 @@ public class SimpleInformant implements Informant {
             dataSource.remove(name);
             return data;
         } else {
-            try (var reader = new FileInputStream(new File(name))) {
+            try (var reader = new FileInputStream(resolveName(name))) {
                 return reader.readAllBytes();
             }
+        }
+    }
+
+    private File resolveName(String name) {
+        String processPath = System.getProperty("user.dir");
+        try {
+            return Path.of(processPath).resolve(name).toFile();
+        } catch (InvalidPathException ex) {
+            return new File(processPath.concat(name));
         }
     }
 }
