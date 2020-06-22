@@ -11,6 +11,9 @@ import java.util.ArrayList;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+/**
+ * Описывает команду 'ls', изменяющую рабочую директорию на свой аргумент
+ */
 public class Cd implements Command {
 
     @NotNull

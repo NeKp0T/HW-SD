@@ -1,5 +1,6 @@
 package com.example.CLI.Commands;
 
+import com.example.CLI.Environment.SimpleInformant;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -22,6 +23,8 @@ class LsAndCdTest {
     private Path rootDir2;
     private Path rootFile1;
     private Path rootFile2;
+    private Path dir1File;
+    SimpleInformant informant;
 
     private void createTestFileTree() throws IOException {
         root = Files.createTempDirectory("CLI_TEST");
@@ -30,7 +33,9 @@ class LsAndCdTest {
         rootDir2 = Files.createDirectory(root.resolve("dir2"));
         rootFile1 = Files.createFile(root.resolve("file1"));
         rootFile2 = Files.createFile(root.resolve("file2"));
+        dir1File = Files.createFile(rootDir1.resolve("file"));
 
+        dir1File.toFile().deleteOnExit();
         root.toFile().deleteOnExit();
         rootDir1.toFile().deleteOnExit();
         rootDir1Dir11.toFile().deleteOnExit();
@@ -47,18 +52,23 @@ class LsAndCdTest {
         list.add(new Literal(arg));
         cmd.setArgs(list);
     }
+
     private void setCmdArg(Command cmd) { ;
         cmd.setArgs(new ArrayList<>());
     }
+
     private void setCdArg(String arg) { setCmdArg(cd, arg); }
+
     private void setLsArg(String arg) { setCmdArg(ls, arg); }
+
     private void setLsArg() { setCmdArg(ls); }
 
     @BeforeEach
-    public void createFiles() throws IOException {
+    public void init() throws IOException {
         createTestFileTree();
         cd = new Cd();
         ls = new Ls();
+        informant = new SimpleInformant();
     }
 
     @Test
@@ -118,6 +128,25 @@ class LsAndCdTest {
         cd.execute();
         setLsArg("..");
         assertLsRoot(ls.execute());
+    }
+
+    @Test
+    public void resolvesAbsolute() {
+        assertDoesNotThrow(() -> informant.getAndClose(rootFile1.toAbsolutePath().toString()));
+    }
+
+    @Test
+    public void resolvesInDirectory() {
+        setCdArg(rootDir1.toAbsolutePath().toString());
+        cd.execute();
+        assertDoesNotThrow(() -> informant.getAndClose("file"));
+    }
+
+    @Test
+    public void resolvesRelative() {
+        setCdArg(root.toAbsolutePath().toString());
+        cd.execute();
+        assertDoesNotThrow(() -> informant.getAndClose(Path.of("..", "file1").toString()));
     }
 
     private void setPWD(Path pwd) {
